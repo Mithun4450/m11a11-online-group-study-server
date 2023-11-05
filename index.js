@@ -37,9 +37,21 @@ async function run() {
       res.send(result);
     })
 
-    app.get('/assignments', async(req, res) =>{
+    app.get('/assignments/all', async(req, res) =>{
       const cursor = assignmentCollection.find();
       const result = await cursor.toArray();
+      res.send(result);
+    })
+
+    app.get("/assignments",  async(req, res) =>{
+      console.log(req.query.difficulty);
+      
+      let query = {};
+      if(req.query?.difficulty){
+        query = {difficulty: req.query.difficulty}
+      }
+      
+      const result = await assignmentCollection.find(query).toArray();
       res.send(result);
     })
 
