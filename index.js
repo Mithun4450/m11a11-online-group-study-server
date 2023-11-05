@@ -9,9 +9,6 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// onlineStudyGroup
-// l2c87pZvgUJtCeeE
-
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.mcynqnr.mongodb.net/?retryWrites=true&w=majority`;
@@ -26,9 +23,25 @@ const client = new MongoClient(uri, {
 });
 
 async function run() {
+
+  const assignmentCollection = client.db("assignmentDB").collection("assignment");
+
+
   try {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
+
+    app.post('/assignments', async(req, res) =>{
+      const assignment = req.body;
+      const result = await assignmentCollection.insertOne(assignment);
+      res.send(result);
+    })
+
+    app.get('/assignments', async(req, res) =>{
+      const cursor = assignmentCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    })
 
 
 
