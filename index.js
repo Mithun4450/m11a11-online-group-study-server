@@ -63,6 +63,38 @@ async function run() {
     })
 
 
+    app.get('/assignments/assignmentWise/:id', async(req, res) =>{
+      const id =  req.params.id;
+      const query = {_id: new ObjectId(id)};
+      console.log(query)
+      const assignment = await assignmentCollection.findOne(query);
+      res.send(assignment);
+
+    })
+
+
+    app.put('/assignments/assignmentWise/:id', async(req, res) =>{
+      const id = req.params.id;
+      const assignment = req.body;
+      console.log(id, assignment);
+      const filter = {_id: new ObjectId(id) };
+      const options = {upsert: true};
+      const updatedAssignment = {
+       $set : {
+         title: assignment.title,
+         photo: assignment.photo,
+         marks: assignment.marks,
+         difficulty: assignment.difficulty,
+         date: assignment.date,
+         description: assignment.description,
+         
+       }
+      };
+      const result = await assignmentCollection.updateOne(filter, updatedAssignment, options);
+      res.send(result);
+   })
+
+
 
 
 
