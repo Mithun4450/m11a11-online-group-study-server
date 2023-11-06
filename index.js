@@ -105,11 +105,27 @@ async function run() {
     res.send(result);
   })
 
-  app.get('/submittedAssignments', async(req, res) =>{
-    const cursor = submittedAssignmentCollection.find();
-    const result = await cursor.toArray();
+  // app.get('/submittedAssignments', async(req, res) =>{
+  //   const cursor = submittedAssignmentCollection.find();
+  //   const result = await cursor.toArray();
+  //   res.send(result);
+  // })
+
+  app.get("/submittedAssignments",  async(req, res) =>{
+    console.log(req.query.AssignmentStatus);
+    
+    let query = {};
+    if(req.query?.AssignmentStatus){
+      query = {AssignmentStatus: req.query.AssignmentStatus}
+    }
+    
+    const result = await submittedAssignmentCollection.find(query).toArray();
     res.send(result);
   })
+
+ 
+
+ 
 
 
 
