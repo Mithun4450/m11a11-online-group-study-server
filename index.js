@@ -25,6 +25,7 @@ const client = new MongoClient(uri, {
 async function run() {
 
   const assignmentCollection = client.db("assignmentDB").collection("assignment");
+  const submittedAssignmentCollection = client.db("assignmentDB").collection("submittedAssignment");
 
 
   try {
@@ -95,6 +96,20 @@ async function run() {
    })
 
 
+  //  ::::::::: submitted assignment ::::::::::::
+
+  app.post('/submittedAssignments', async(req, res) =>{
+    const submittedAssignment = req.body;
+    console.log(submittedAssignment)
+    const result = await submittedAssignmentCollection.insertOne(submittedAssignment);
+    res.send(result);
+  })
+
+  app.get('/submittedAssignments', async(req, res) =>{
+    const cursor = submittedAssignmentCollection.find();
+    const result = await cursor.toArray();
+    res.send(result);
+  })
 
 
 
