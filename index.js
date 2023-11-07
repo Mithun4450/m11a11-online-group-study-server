@@ -26,7 +26,7 @@ async function run() {
 
   const assignmentCollection = client.db("assignmentDB").collection("assignment");
   const submittedAssignmentCollection = client.db("assignmentDB").collection("submittedAssignment");
-  const markedAssignmentCollection = client.db("assignmentDB").collection("markedAssignment");
+  
   const featureCollection = client.db("assignmentDB").collection("feature");
 
 
@@ -141,16 +141,50 @@ async function run() {
 
    //  ::::::::: marked assignments ::::::::::::
 
-   app.post('/markedAssignments', async(req, res) =>{
-    const markedAssignment = req.body;
-    console.log(markedAssignment)
-    const result = await markedAssignmentCollection.insertOne(markedAssignment);
+ 
+
+  app.patch("/submittedAssignments/mark/:id", async(req, res) =>{
+    const id = req.params.id;
+    const filter = {_id: new ObjectId(id)}
+    const updatedSubmittedAssignment = req.body;
+    console.log(updatedSubmittedAssignment)
+    const updateDoc = {
+      $set: {
+        obtainedMarks: updatedSubmittedAssignment.obtainedMarks,
+        feedback: updatedSubmittedAssignment.feedback,
+        AssignmentStatus: updatedSubmittedAssignment.AssignmentStatus,
+      },
+    };
+
+    const result = await submittedAssignmentCollection.updateOne(filter, updateDoc);
+    res.send(result);
+
+  })
+
+
+
+  app.get("/submittedAssignments/mark",  async(req, res) =>{
+    console.log(req.query.AssignmentStatus);
+    
+    let query = {};
+    if(req.query?.AssignmentStatus){
+      query = {AssignmentStatus: req.query.AssignmentStatus}
+    }
+    
+    const result = await submittedAssignmentCollection.find(query).toArray();
     res.send(result);
   })
 
-  app.get('/markedAssignments', async(req, res) =>{
-    const cursor = markedAssignmentCollection.find();
-    const result = await cursor.toArray();
+
+  app.get("/submittedAssignments/my",  async(req, res) =>{
+    console.log(req.query.userEmail);
+    
+    let query = {};
+    if(req.query?.userEmail){
+      query = {userEmail: req.query.userEmail}
+    }
+    
+    const result = await submittedAssignmentCollection.find(query).toArray();
     res.send(result);
   })
 
