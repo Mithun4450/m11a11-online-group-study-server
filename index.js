@@ -26,6 +26,7 @@ async function run() {
 
   const assignmentCollection = client.db("assignmentDB").collection("assignment");
   const submittedAssignmentCollection = client.db("assignmentDB").collection("submittedAssignment");
+  const markedAssignmentCollection = client.db("assignmentDB").collection("markedAssignment");
 
 
   try {
@@ -105,11 +106,7 @@ async function run() {
     res.send(result);
   })
 
-  // app.get('/submittedAssignments', async(req, res) =>{
-  //   const cursor = submittedAssignmentCollection.find();
-  //   const result = await cursor.toArray();
-  //   res.send(result);
-  // })
+  
 
   app.get("/submittedAssignments",  async(req, res) =>{
     console.log(req.query.AssignmentStatus);
@@ -123,7 +120,38 @@ async function run() {
     res.send(result);
   })
 
- 
+
+  app.get('/submittedAssignments/submittedAssignmentWise/:id', async(req, res) =>{
+    const id =  req.params.id;
+    const query = {_id: new ObjectId(id)};
+    console.log(query)
+    const submittedAssignment = await submittedAssignmentCollection.findOne(query);
+    res.send(submittedAssignment);
+
+  })
+
+  app.delete("/submittedAssignments/:id", async(req, res) =>{
+    const id = req.params.id;
+    const query = {_id : new ObjectId(id)};
+    const result = await submittedAssignmentCollection.deleteOne(query);
+    res.send(result);
+  })
+
+
+   //  ::::::::: marked assignments ::::::::::::
+
+   app.post('/markedAssignments', async(req, res) =>{
+    const markedAssignment = req.body;
+    console.log(markedAssignment)
+    const result = await markedAssignmentCollection.insertOne(markedAssignment);
+    res.send(result);
+  })
+
+  app.get('/markedAssignments', async(req, res) =>{
+    const cursor = markedAssignmentCollection.find();
+    const result = await cursor.toArray();
+    res.send(result);
+  })
 
  
 
