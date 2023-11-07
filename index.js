@@ -27,6 +27,7 @@ async function run() {
   const assignmentCollection = client.db("assignmentDB").collection("assignment");
   const submittedAssignmentCollection = client.db("assignmentDB").collection("submittedAssignment");
   const markedAssignmentCollection = client.db("assignmentDB").collection("markedAssignment");
+  const featureCollection = client.db("assignmentDB").collection("feature");
 
 
   try {
@@ -152,6 +153,15 @@ async function run() {
     const result = await cursor.toArray();
     res.send(result);
   })
+
+
+    //  ::::::::: feature ::::::::::::
+
+    app.get('/features', async(req, res) =>{
+      const cursor = featureCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    })
 
  
 
