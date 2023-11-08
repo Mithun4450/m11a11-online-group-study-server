@@ -9,7 +9,12 @@ const port = process.env.PORT || 5000;
 
 // middleware
 app.use(cors({
-  origin: ['http://localhost:5173'],
+  origin: [
+    'http://localhost:5173',
+    'https://m11a11-online-group-study.web.app',
+    'https://m11a11-online-group-study.firebaseapp.com'
+
+],
   credentials: true
 }));
 app.use(express.json());
