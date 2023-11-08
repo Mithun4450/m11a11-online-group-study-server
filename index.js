@@ -2,12 +2,35 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 require('dotenv').config();
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 const { MongoClient, ServerApiVersion, ObjectId  } = require('mongodb');
 const port = process.env.PORT || 5000;
 
 // middleware
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173'],
+  credentials: true
+}));
 app.use(express.json());
+app.use(cookieParser());
+
+
+const verifyToken = (req, res, next) =>{
+  const token = req?.cookies?.token;
+  console.log('token in the middleware', token);
+  if(!token){
+    return res.status(401).send({message: 'unauthorized access'})
+  }
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) =>{
+    if(err){
+      return res.status(401).send({message: 'unauthorized access'})
+    }
+    req.user = decoded;
+    next();
+  })
+
+}
 
 
 
@@ -34,7 +57,32 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
 
-    app.post('/assignments', async(req, res) =>{
+    app.post("/jwt", async(req, res) =>{
+      const user = req.body;
+      console.log('user for token', user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'})
+      res
+      .cookie('token', token, {
+        httpOnly: true,
+        secure:true,
+        sameSite: 'none',
+      })
+      .send({success: true});
+    })
+
+
+    app.post("/logout", async(req, res) =>{
+      const user = req.body;
+      console.log('logging out', user);
+      res
+      .cookie('token', {maxAge:0})
+      .send({success: true})
+      
+    })
+
+
+    app.post('/assignments',  async(req, res) =>{
+
       const assignment = req.body;
       const result = await assignmentCollection.insertOne(assignment);
       res.send(result);
@@ -59,6 +107,7 @@ async function run() {
     })
 
     app.delete("/assignments/:id", async(req, res) =>{
+
       const id = req.params.id;
       const query = {_id : new ObjectId(id)};
       const result = await assignmentCollection.deleteOne(query);
@@ -66,7 +115,9 @@ async function run() {
     })
 
 
-    app.get('/assignments/assignmentWise/:id', async(req, res) =>{
+    app.get('/assignments/assignmentWise/:id', verifyToken, async(req, res) =>{
+
+ 
       const id =  req.params.id;
       const query = {_id: new ObjectId(id)};
       console.log(query)
@@ -76,7 +127,8 @@ async function run() {
     })
 
 
-    app.put('/assignments/assignmentWise/:id', async(req, res) =>{
+    app.put('/assignments/assignmentWise/:id',  async(req, res) =>{
+
       const id = req.params.id;
       const assignment = req.body;
       console.log(id, assignment);
@@ -100,7 +152,8 @@ async function run() {
 
   //  ::::::::: submitted assignment ::::::::::::
 
-  app.post('/submittedAssignments', async(req, res) =>{
+  app.post('/submittedAssignments',  async(req, res) =>{
+
     const submittedAssignment = req.body;
     console.log(submittedAssignment)
     const result = await submittedAssignmentCollection.insertOne(submittedAssignment);
@@ -109,9 +162,10 @@ async function run() {
 
   
 
-  app.get("/submittedAssignments",  async(req, res) =>{
+  app.get("/submittedAssignments", verifyToken, async(req, res) =>{
     console.log(req.query.AssignmentStatus);
-    
+
+   
     let query = {};
     if(req.query?.AssignmentStatus){
       query = {AssignmentStatus: req.query.AssignmentStatus}
@@ -122,7 +176,9 @@ async function run() {
   })
 
 
-  app.get('/submittedAssignments/submittedAssignmentWise/:id', async(req, res) =>{
+  app.get('/submittedAssignments/submittedAssignmentWise/:id', verifyToken, async(req, res) =>{
+    
+    
     const id =  req.params.id;
     const query = {_id: new ObjectId(id)};
     console.log(query)
@@ -131,7 +187,8 @@ async function run() {
 
   })
 
-  app.delete("/submittedAssignments/:id", async(req, res) =>{
+  app.delete("/submittedAssignments/:id",  async(req, res) =>{
+
     const id = req.params.id;
     const query = {_id : new ObjectId(id)};
     const result = await submittedAssignmentCollection.deleteOne(query);
@@ -143,7 +200,8 @@ async function run() {
 
  
 
-  app.patch("/submittedAssignments/mark/:id", async(req, res) =>{
+  app.patch("/submittedAssignments/mark/:id",  async(req, res) =>{
+
     const id = req.params.id;
     const filter = {_id: new ObjectId(id)}
     const updatedSubmittedAssignment = req.body;
@@ -163,7 +221,9 @@ async function run() {
 
 
 
-  app.get("/submittedAssignments/mark",  async(req, res) =>{
+  app.get("/submittedAssignments/mark", verifyToken,  async(req, res) =>{
+    
+
     console.log(req.query.AssignmentStatus);
     
     let query = {};
@@ -176,8 +236,9 @@ async function run() {
   })
 
 
-  app.get("/submittedAssignments/my",  async(req, res) =>{
+  app.get("/submittedAssignments/my", verifyToken, async(req, res) =>{
     console.log(req.query.userEmail);
+
     
     let query = {};
     if(req.query?.userEmail){
