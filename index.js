@@ -56,6 +56,7 @@ async function run() {
   const submittedAssignmentCollection = client.db("assignmentDB").collection("submittedAssignment");
   
   const featureCollection = client.db("assignmentDB").collection("feature");
+  const resourceCollection = client.db("assignmentDB").collection("resources");
 
 
   try {
@@ -93,10 +94,26 @@ async function run() {
       res.send(result);
     })
 
-    app.get('/assignments/all', async(req, res) =>{
-      const cursor = assignmentCollection.find();
-      const result = await cursor.toArray();
+    app.get('/assignments/all', async(req, res) => {
+      console.log('pagination query', req.query)
+      const page = parseInt(req.query.page);
+      const size = parseInt(req.query.size);
+      const result = await assignmentCollection.find()
+      .skip(page * size)
+      .limit(size)
+      .toArray();
       res.send(result);
+     })
+
+    // app.get('/assignments/all', async(req, res) =>{
+    //   const cursor = assignmentCollection.find();
+    //   const result = await cursor.toArray();
+    //   res.send(result);
+    // })
+
+    app.get("/assignmentsCount", async(req, res) =>{
+      const count = await assignmentCollection.estimatedDocumentCount();
+      res.send({count});
     })
 
     app.get("/assignments",  async(req, res) =>{
@@ -263,7 +280,14 @@ async function run() {
       res.send(result);
     })
 
- 
+  //  ::::::::: resources ::::::::::::
+
+  app.get('/resources', async(req, res) =>{
+    const resources = resourceCollection.find();
+    console.log(resources)
+    const result = await resources.toArray();
+    res.send(result)
+  })
 
 
 
